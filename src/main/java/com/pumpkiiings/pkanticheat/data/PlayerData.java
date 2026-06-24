@@ -3,8 +3,9 @@ package com.pumpkiiings.pkanticheat.data;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.UUID;
 
 public class PlayerData {
@@ -15,17 +16,23 @@ public class PlayerData {
     private Vec3 currentLocation = Vec3.ZERO;
     private Vec3 lastValidGroundLocation = Vec3.ZERO;
     private boolean wasOnGround = true;
+    private double lastYDelta = 0.0;
 
-    // FastBreak
+    // FastBreak & Scaffold
     private BlockPos miningBlock = null;
     private long miningStartTime = 0;
+    public int scaffoldVL = 0;
 
-    // Killaura
-    public final Queue<Float> yawDeltas = new LinkedList<>();
-    public final Queue<Float> pitchDeltas = new LinkedList<>();
+    // Killaura / Aim
+    public final Deque<Float> yawDeltas   = new ArrayDeque<>();
+    public final Deque<Float> pitchDeltas = new ArrayDeque<>();
 
     private float lastYaw;
     private float lastPitch;
+
+    // Network Rotations (Netty Phase 1)
+    private float networkYaw;
+    private float networkPitch;
 
     // Network Packets (Timer/Blink)
     public long lastMovementPacketTime = System.currentTimeMillis();
@@ -41,9 +48,41 @@ public class PlayerData {
     public int spiderVL = 0;
     public int waterWalkVL = 0;
     public int noFallVL = 0;
-    public int strafeVL = 0; // Existing strafe flag
+    public int strafeVL = 0;
     public int slowTimerVL = 0;
     public int airTicks = 0;
+
+    // NoSwingCheck — per-tick flags
+    public boolean swungThisTick = false;
+    public boolean attackedThisTick = false;
+    public int noSwingVL = 0;
+
+    // PacketOrderCheck — per-tick flags
+    public boolean swingBeforeAttack = false;
+    public int packetOrderVL = 0;
+
+    // GCDCheck — Euclidean sensitivity analysis
+    public float gcdSensVL = 0f;
+    public int   gcdMicroVL = 0;
+    public float prevPitchGCD = 0f;
+
+    // RotationSnapCheck — rolling yaw history (last 2 ticks)
+    public double prevTickYawDelta = 0.0;
+    public int rotationSnapVL = 0;
+    public long lastAttackTimestamp = 0L;
+
+    // RotationStdDevCheck — sample lists for pitch/yaw vs perfect target angle
+    public final java.util.ArrayDeque<Float> yawToPerfectSamples   = new java.util.ArrayDeque<>();
+    public final java.util.ArrayDeque<Float> pitchToPerfectSamples = new java.util.ArrayDeque<>();
+    public double rotStdDevYawBalance   = 0.0;
+    public double rotStdDevPitchBalance = 0.0;
+
+    // HitboxAccuracyCheck
+    public int hitboxAccuracyAttacks = 0;
+    public int hitboxAccuracySwings  = 0;
+    public double hitboxAccuracyVL   = 0.0;
+    public final java.util.ArrayDeque<Float> distToPerfectYawList  = new java.util.ArrayDeque<>();
+    public final java.util.ArrayDeque<Float> yawSpeedList          = new java.util.ArrayDeque<>();
     
     // Tracking true fall distance
     public float realFallDistance = 0.0f;
@@ -182,5 +221,29 @@ public class PlayerData {
 
     public void setLastPitch(float lastPitch) {
         this.lastPitch = lastPitch;
+    }
+
+    public double getLastYDelta() {
+        return lastYDelta;
+    }
+
+    public void setLastYDelta(double lastYDelta) {
+        this.lastYDelta = lastYDelta;
+    }
+
+    public float getNetworkYaw() {
+        return networkYaw;
+    }
+
+    public void setNetworkYaw(float networkYaw) {
+        this.networkYaw = networkYaw;
+    }
+
+    public float getNetworkPitch() {
+        return networkPitch;
+    }
+
+    public void setNetworkPitch(float networkPitch) {
+        this.networkPitch = networkPitch;
     }
 }

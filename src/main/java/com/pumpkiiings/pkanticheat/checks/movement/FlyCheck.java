@@ -29,7 +29,6 @@ public class FlyCheck extends Check {
         }
 
         PlayerData data = PlayerDataManager.getData(player);
-        data.setCurrentLocation(player.position());
         Vec3 lastPos = data.getLastLocation();
         Vec3 currPos = data.getCurrentLocation();
 
@@ -57,10 +56,7 @@ public class FlyCheck extends Check {
                 data.flyVL = 0;
             }
         } else if (currentlyOnGround) {
-            data.setLastValidGroundLocation(currPos);
             data.flyVL = 0;
         }
-
-        data.setWasOnGround(currentlyOnGround);
     }
 }
